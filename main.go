@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/labstack/echo/v4"
 	"io"
+	"log"
 	"net/http"
 	"strings"
 )
@@ -11,7 +12,7 @@ import (
 func main() {
 	e := echo.New()
 	e.GET("/", func(c echo.Context) error {
-		return c.File("index.html")
+		return c.File("youtube-downloader/index.html")
 	})
 
 	e.POST("/download", func(c echo.Context) error {
@@ -25,7 +26,13 @@ func main() {
 		if err != nil {
 			return c.String(http.StatusInternalServerError, "Failed to download thumbnail")
 		}
-		defer resp.Body.Close()
+		defer func(Body io.ReadCloser) {
+			err := Body.Close()
+			if err != nil {
+				log.Fatal("Error closing resp.Body", err)
+				return
+			}
+		}(resp.Body)
 
 		if resp.StatusCode != http.StatusOK {
 			return c.String(http.StatusInternalServerError, "Failed to download thumbnail")
@@ -39,7 +46,11 @@ func main() {
 		return nil
 	})
 
-	e.Start(":8080")
+	err := e.Start(":8080")
+	if err != nil {
+		log.Fatal("Failed to start server!", err)
+		return
+	}
 }
 
 func getThumbnailURL(videoURL string) string {
