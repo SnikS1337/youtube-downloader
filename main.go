@@ -11,7 +11,7 @@ import (
 func main() {
 	e := echo.New()
 	e.GET("/", func(c echo.Context) error {
-		return c.File("index.html")
+		return c.File("youtube-downloader/index.html")
 	})
 
 	e.POST("/download", func(c echo.Context) error {
